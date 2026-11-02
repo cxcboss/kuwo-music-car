@@ -219,7 +219,9 @@ apply_performance(file, change, inject, edits)
 
 # The original update control is hidden and has no click handler. Reuse that row.
 inject("cn/kuwo/kwmusiccar/ui/fragment/CheckUpdateFragment.smali", "onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V",
-       "    invoke-static {p1}, Lcn/kuwo/bridge/GithubUpdater;->bindAbout(Landroid/view/View;)V", True)
+       """    invoke-virtual {p0}, Landroidx/fragment/app/Fragment;->getView()Landroid/view/View;
+    move-result-object v0
+    invoke-static {v0}, Lcn/kuwo/bridge/GithubUpdater;->bindAbout(Landroid/view/View;)V""", True)
 change("cn/kuwo/kwmusiccar/KwApp.smali", "getVersionName()Ljava/lang/String;",
        f'    const-string v0, "{VERSION_NAME}"\n    return-object v0', 1)
 change("cn/kuwo/kwmusiccar/KwApp.smali", "getVersionCode()I",
