@@ -48,7 +48,7 @@ public final class GithubUpdater {
                     || !fileName.equals(version+"-酷我音乐.apk") || !sha256.matches("[0-9a-f]{64}")
                     || !"https".equals(uri.getScheme()) || !"github.com".equals(uri.getHost())
                     || uri.getUserInfo()!=null || uri.getQuery()!=null || uri.getFragment()!=null
-                    || !uri.getPath().equals("/"+BuildInfo.REPOSITORY+"/releases/download/v"+version+"/"+fileName)) {
+                    || !uri.getPath().equals("/"+BuildInfo.REPOSITORY+"/releases/download/v"+version+"/"+version+"-kuwo-music.apk")) {
                 throw new IOException("Invalid release metadata");
             }
             url=uri.toURL();

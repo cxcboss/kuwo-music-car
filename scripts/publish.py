@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import shutil
 from pathlib import Path
 import subprocess
 from version import CONFIG, VERSION_NAME, VERSION_CODE
@@ -22,8 +23,10 @@ if verification['status']!='PASS' or hashlib.sha256(apk.read_bytes()).hexdigest(
 if subprocess.check_output(['git','status','--porcelain'],cwd=root,text=True).strip():
     raise SystemExit('Commit project changes before publishing')
 commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
+asset=build/(VERSION_NAME+'-kuwo-music.apk')
+shutil.copyfile(apk,asset)
 subprocess.run(['gh','release','create','v'+VERSION_NAME,'--repo',CONFIG['repository'],
     '--target',commit,'--draft','--title',VERSION_NAME,'--notes-file',str(root/'docs/版本更新.md'),
-    str(apk),str(build/'update.json'),str(build/'SHA256SUMS')],cwd=root,check=True)
+    str(asset)+'#'+apk.name,str(build/'update.json'),str(build/'SHA256SUMS')],cwd=root,check=True)
 subprocess.run(['gh','release','edit','v'+VERSION_NAME,'--repo',CONFIG['repository'],
     '--draft=false','--latest'],cwd=root,check=True)

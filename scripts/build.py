@@ -9,7 +9,6 @@ from pathlib import Path
 import shutil
 import subprocess
 import zipfile
-from urllib.parse import quote
 from version import CONFIG, VERSION_NAME, VERSION_CODE, APPLICATION_ID
 
 ROOT=Path(__file__).resolve().parent.parent
@@ -79,8 +78,8 @@ result={'apk':str(final),'application_id':APPLICATION_ID,'version_name':VERSION_
 (out/'build-result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
 update={'schemaVersion':1,'applicationId':APPLICATION_ID,'versionName':VERSION_NAME,'versionCode':VERSION_CODE,
     'fileName':final.name,'size':final.stat().st_size,'sha256':digest,
-    'downloadUrl':f'https://github.com/{CONFIG["repository"]}/releases/download/v{VERSION_NAME}/{quote(final.name)}'}
+    'downloadUrl':f'https://github.com/{CONFIG["repository"]}/releases/download/v{VERSION_NAME}/{VERSION_NAME}-kuwo-music.apk'}
 (out/'update.json').write_text(json.dumps(update,ensure_ascii=False,indent=2)+'\n')
-(out/'SHA256SUMS').write_text(digest+'  '+final.name+'\n')
+(out/'SHA256SUMS').write_text(digest+'  '+VERSION_NAME+'-kuwo-music.apk\n')
 run([os.sys.executable,ROOT/'scripts/verify_build.py',out],'verify-artifact')
 print(json.dumps(result,ensure_ascii=False,indent=2))
