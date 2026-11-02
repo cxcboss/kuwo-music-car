@@ -1,0 +1,12 @@
+.DS_Store
+.omx/
+__pycache__/
+*.pyc
+*.apk
+*.jks
+*.keystore
+*password*
+local.env
+build/
+work/
+dist/

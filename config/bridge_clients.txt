@@ -1,0 +1,2 @@
+# Packages authorized for the local music bridge. Rebuild to change this list.
+com.cabindeck

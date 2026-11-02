@@ -1,0 +1,578 @@
+{
+  "apiVersion": 2,
+  "minimumCompatibleApiVersion": 1,
+  "buildVersion": "1.0.0",
+  "versionCode": 74000,
+  "applicationId": "cn.kuwo.kwmusiccas",
+  "authority": "cn.kuwo.kwmusiccar.bridge",
+  "methodCount": 67,
+  "transport": "ContentProvider.call + ResultReceiver; artwork: openInputStream",
+  "limits": {
+    "pageSizeMax": 50,
+    "pageMax": 10000,
+    "activeCatalogRequestsPerUid": 2,
+    "activeCatalogRequestsGlobal": 8,
+    "retainedResultPagesPerUid": 2,
+    "retainedResultPagesGlobal": 16,
+    "resultRetentionMs": 120000,
+    "hostNetworkTimeoutMs": 20000,
+    "sdkTimeoutMs": 25000,
+    "artworkEdgeMin": 64,
+    "artworkEdgeMax": 1024
+  },
+  "methods": [
+    {
+      "method": "capabilities",
+      "parameters": {},
+      "result": "apiVersion:int=2, minimumCompatibleApiVersion:int=1, methods:String[], listTypes:String[], observerUris:String[], limits",
+      "notes": "同步响应；SDK 统一以异步回调交付，不需要服务就绪。"
+    },
+    {
+      "method": "getAppInfo",
+      "parameters": {},
+      "result": "packageName, versionName, versionCode:long, apiVersion:int",
+      "notes": "无需服务就绪。"
+    },
+    {
+      "method": "initialize",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:boolean, startupStatus, serviceReady:boolean",
+      "notes": "仅准备后台服务，不打开页面，不自动播放；需已同意隐私。"
+    },
+    {
+      "method": "getStartupConfig",
+      "parameters": {},
+      "result": "autoStartEnabled:boolean, silent:true, autoPlay:false, privacyAgreed:boolean, serviceReady:boolean, startupStatus, lastReason, requestedAtElapsedMs:long",
+      "notes": "无需服务就绪。lastReason 和 requestedAt 为当前进程的启动记录。"
+    },
+    {
+      "method": "getStartupStatus",
+      "parameters": {},
+      "result": "autoStartEnabled:boolean, silent:true, autoPlay:false, privacyAgreed:boolean, serviceReady:boolean, startupStatus, lastReason, requestedAtElapsedMs:long",
+      "notes": "无需服务就绪。lastReason 和 requestedAt 为当前进程的启动记录。"
+    },
+    {
+      "method": "setStartupConfig",
+      "parameters": {
+        "autoStartEnabled": "boolean 必填"
+      },
+      "result": "启动配置 + accepted/stateConfirmed",
+      "notes": "与原设置页的开机启动开关共用存储；关闭只影响后续开机，不中断当前播放。"
+    },
+    {
+      "method": "getState",
+      "parameters": {},
+      "result": "state:PlaybackState",
+      "notes": ""
+    },
+    {
+      "method": "getPlaybackInfo",
+      "parameters": {},
+      "result": "state:PlaybackState, controls:{canSeek:boolean,canSetMode:boolean,modes:String[]}",
+      "notes": ""
+    },
+    {
+      "method": "getSongInfo",
+      "parameters": {
+        "songRef": "SongRef 可选，默认当前歌曲"
+      },
+      "result": "song:Song",
+      "notes": ""
+    },
+    {
+      "method": "getArtwork",
+      "parameters": {},
+      "result": "trackKey, artworkUri, coverUrl, mimeType, available:boolean, revision:long, width:int, height:int",
+      "notes": "当前歌曲的宿主缓存封面；不会为此接口下载网络图片。宽高为原缓存图，输出 URI 可指定 size。"
+    },
+    {
+      "method": "getLyrics",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "trackKey, revision:long, resultCode:int, lines:LyricLine[], total:int, hasMore:boolean",
+      "notes": ""
+    },
+    {
+      "method": "getCurrentLyric",
+      "parameters": {},
+      "result": "trackKey, revision:long, resultCode:int, positionMs:long, index:int, previous/current/next:LyricLine 可缺省",
+      "notes": "index=-1 表示播放尚未到第一行或暂无歌词；以 resultCode=20000 判断歌词成功。"
+    },
+    {
+      "method": "play",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "走原媒体回调。命令接受不代表已出声，之后读取 getState。"
+    },
+    {
+      "method": "pause",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "走原媒体回调。命令接受不代表已出声，之后读取 getState。"
+    },
+    {
+      "method": "stop",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "走原媒体回调。命令接受不代表已出声，之后读取 getState。"
+    },
+    {
+      "method": "previous",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "走原媒体回调。命令接受不代表已出声，之后读取 getState。"
+    },
+    {
+      "method": "next",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "走原媒体回调。命令接受不代表已出声，之后读取 getState。"
+    },
+    {
+      "method": "playPause",
+      "parameters": {},
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "走原媒体回调。命令接受不代表已出声，之后读取 getState。"
+    },
+    {
+      "method": "seek",
+      "parameters": {
+        "positionMs": "long 必填，毫秒"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": ""
+    },
+    {
+      "method": "setMode",
+      "parameters": {
+        "mode": "single | sequential | repeat_all | shuffle"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": ""
+    },
+    {
+      "method": "getLists",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "lists:{listId,name}[], total:int, hasMore:boolean",
+      "notes": "仅本机已加载的音乐列表，非云端全部歌单。"
+    },
+    {
+      "method": "getPlaylists",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "lists:{listId,name}[], total:int, hasMore:boolean",
+      "notes": "仅本机已加载的音乐列表，非云端全部歌单。"
+    },
+    {
+      "method": "getListItems",
+      "parameters": {
+        "listId": "queue | favorites | history | named:...",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], revision:string, total:int, page:int, hasMore:boolean",
+      "notes": ""
+    },
+    {
+      "method": "getQueue",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], revision:string, listId, total:int, page:int, hasMore:boolean；队列另有 activeIndex:int",
+      "notes": ""
+    },
+    {
+      "method": "getHistory",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], revision:string, listId, total:int, page:int, hasMore:boolean；队列另有 activeIndex:int",
+      "notes": ""
+    },
+    {
+      "method": "getPlaylistInfo",
+      "parameters": {
+        "listId": "string 默认 queue"
+      },
+      "result": "list:{listId,name,type,total:int,revision,writable:boolean,canRename:boolean,canDelete:boolean}",
+      "notes": ""
+    },
+    {
+      "method": "playItem",
+      "parameters": {
+        "listId": "string 必填",
+        "revision": "string 必填",
+        "index": "int，整列表绝对下标"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "读取列表后带回 revision；变化返回 STALE_LIST。"
+    },
+    {
+      "method": "playSearchItem",
+      "parameters": {
+        "searchRequestId": "string 必填",
+        "index": "int，本页下标"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "保留 v1 搜索播放合同。"
+    },
+    {
+      "method": "playResultItem",
+      "parameters": {
+        "resultRequestId": "string 必填，也兼容 searchRequestId",
+        "index": "int，本页下标"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "搜索及曲库歌曲结果均可播放；替换队列为该结果页。"
+    },
+    {
+      "method": "playQueue",
+      "parameters": {
+        "songRefs": "ArrayList<Bundle>，1..50 个 SongRef",
+        "startIndex": "int 默认0"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "按给定顺序播放并替换队列；可包含重复项，原宿主可能应用自身队列策略。"
+    },
+    {
+      "method": "addToQueue",
+      "parameters": {
+        "revision": "当前 queue revision 必填",
+        "songRef": "SongRef 可选，默认当前歌曲"
+      },
+      "result": "accepted:boolean, stateConfirmed:false, index:int, upstreamCode:int",
+      "notes": "只编辑宿主 LIST_TEMPORARY 或用户自建队列；playNext 是插入下一首，不立即播放。"
+    },
+    {
+      "method": "playNext",
+      "parameters": {
+        "revision": "当前 queue revision 必填",
+        "songRef": "SongRef 可选，默认当前歌曲"
+      },
+      "result": "accepted:boolean, stateConfirmed:false, index:int, upstreamCode:int",
+      "notes": "只编辑宿主 LIST_TEMPORARY 或用户自建队列；playNext 是插入下一首，不立即播放。"
+    },
+    {
+      "method": "removeQueueItem",
+      "parameters": {
+        "revision": "当前 queue revision 必填",
+        "index": "int，队列绝对下标"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "只编辑可写队列；删除当前项后的播放行为沿用原宿主。"
+    },
+    {
+      "method": "clearQueue",
+      "parameters": {
+        "revision": "当前 queue revision 必填"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "仅清空播放列表，不删除音频文件。"
+    },
+    {
+      "method": "getFavoriteState",
+      "parameters": {
+        "songRef": "SongRef 可选"
+      },
+      "result": "favorite:boolean",
+      "notes": ""
+    },
+    {
+      "method": "setFavorite",
+      "parameters": {
+        "songRef": "SongRef 可选",
+        "favorite": "boolean 必填"
+      },
+      "result": "favorite:boolean, accepted:boolean, stateConfirmed:boolean, upstreamCode:int",
+      "notes": "要求原账号已登录，保留原收藏业务检查；不主动打开登录界面，原收藏成功路径可能提示 Toast。"
+    },
+    {
+      "method": "toggleFavorite",
+      "parameters": {
+        "songRef": "SongRef 可选"
+      },
+      "result": "favorite:boolean, accepted:boolean, stateConfirmed:boolean, upstreamCode:int",
+      "notes": "同 setFavorite，切换当前实际收藏状态。"
+    },
+    {
+      "method": "createPlaylist",
+      "parameters": {
+        "name": "string 必填，1..100字符"
+      },
+      "result": "listId, accepted:boolean, stateConfirmed:false",
+      "notes": "要求登录，仅创建原业务用户歌单；名称仍经宿主校验。"
+    },
+    {
+      "method": "renamePlaylist",
+      "parameters": {
+        "listId": "named:...，自建歌单",
+        "revision": "string 必填",
+        "name": "string 必填，1..100字符"
+      },
+      "result": "新 listId, accepted:boolean, stateConfirmed:false",
+      "notes": "只允许 LIST_USER_CREATE；名称变化后 listId 随之变化。"
+    },
+    {
+      "method": "deletePlaylist",
+      "parameters": {
+        "listId": "named:...，自建歌单",
+        "revision": "string 必填"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "要求登录；仅列表操作，不删除本地音频。客户端应由用户明确操作触发。"
+    },
+    {
+      "method": "clearPlaylist",
+      "parameters": {
+        "listId": "named:...，自建歌单",
+        "revision": "string 必填"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "要求登录；仅列表操作，不删除本地音频。客户端应由用户明确操作触发。"
+    },
+    {
+      "method": "addPlaylistItem",
+      "parameters": {
+        "listId": "named:...，自建歌单",
+        "revision": "目标歌单 revision 必填",
+        "songRef": "SongRef 必填"
+      },
+      "result": "accepted:boolean, stateConfirmed:false, upstreamCode:int",
+      "notes": "要求登录；添加到末尾。"
+    },
+    {
+      "method": "removePlaylistItem",
+      "parameters": {
+        "listId": "named:...，自建歌单",
+        "revision": "string 必填",
+        "index": "int，目标歌单绝对下标"
+      },
+      "result": "accepted:boolean, stateConfirmed:false",
+      "notes": "要求登录；删除指定项，不按歌曲 ID 批量删除重复项。"
+    },
+    {
+      "method": "getVolume",
+      "parameters": {},
+      "result": "volume:int, maxVolume:int, scope:device_music_stream",
+      "notes": ""
+    },
+    {
+      "method": "setVolume",
+      "parameters": {
+        "volume": "int 必填，0..maxVolume"
+      },
+      "result": "volume:int, maxVolume:int, scope, accepted:boolean, stateConfirmed:boolean",
+      "notes": "调整 Android 的整机媒体流音量，会影响该流上的其他应用；不改变通话/导航专用流。"
+    },
+    {
+      "method": "adjustVolume",
+      "parameters": {
+        "delta": "int 默认0，-10..10"
+      },
+      "result": "同 getVolume + accepted/stateConfirmed",
+      "notes": "整机媒体流音量增减，自动限制到有效范围。"
+    },
+    {
+      "method": "getAccountState",
+      "parameters": {},
+      "result": "loggedIn:boolean",
+      "notes": "仅登录状态，不返回账号、Cookie 或 token。"
+    },
+    {
+      "method": "search",
+      "parameters": {
+        "query": "string，1..200字符",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], requestId, resultCount:int, page:int, hasMore:boolean, hasMoreEstimated:true",
+      "notes": "本页保留 120 秒用于选曲。"
+    },
+    {
+      "method": "cancelSearch",
+      "parameters": {
+        "targetRequestId": "string 必填"
+      },
+      "result": "cancelled:boolean",
+      "notes": "cancelRequest 统一取消搜索或曲库请求。被取消请求另收到 CANCELLED。"
+    },
+    {
+      "method": "cancelRequest",
+      "parameters": {
+        "targetRequestId": "string 必填"
+      },
+      "result": "cancelled:boolean",
+      "notes": "cancelRequest 统一取消搜索或曲库请求。被取消请求另收到 CANCELLED。"
+    },
+    {
+      "method": "getSongById",
+      "parameters": {
+        "id": "string，正数歌曲ID"
+      },
+      "result": "song:Song, items:Song[], resultRequestId",
+      "notes": "只取歌曲数据；随后 playResultItem 选曲，或把结果作为 SongRef。"
+    },
+    {
+      "method": "getDailyRecommendations",
+      "parameters": {
+        "page": "int 默认0"
+      },
+      "result": "items:Song[], resultRequestId, page, upstreamPageCount, truncated, hasMoreEstimated:true",
+      "notes": "沿用宿主定义的分页大小；每次最多传输50项，不以 pageSize 改写宿主页。非空页的 hasMore 只表示可继续尝试下一页。"
+    },
+    {
+      "method": "getRecommendedTracks",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, hasMoreEstimated:true",
+      "notes": ""
+    },
+    {
+      "method": "getHotKeywords",
+      "parameters": {
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "values:String[]",
+      "notes": ""
+    },
+    {
+      "method": "getSearchSuggestions",
+      "parameters": {
+        "query": "string，1..200字符",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "values:String[]",
+      "notes": "外部客户端输入自行防抖，旧请求可 cancelRequest。"
+    },
+    {
+      "method": "searchAlbums",
+      "parameters": {
+        "query": "string，1..200字符",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, hasMoreEstimated:true",
+      "notes": ""
+    },
+    {
+      "method": "searchArtists",
+      "parameters": {
+        "query": "string，1..200字符",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, hasMoreEstimated:true",
+      "notes": ""
+    },
+    {
+      "method": "searchPlaylists",
+      "parameters": {
+        "query": "string，1..200字符",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, hasMoreEstimated:true",
+      "notes": ""
+    },
+    {
+      "method": "getRecommendedPlaylists",
+      "parameters": {
+        "sort": "hot | new，默认hot",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, hasMoreEstimated:true",
+      "notes": ""
+    },
+    {
+      "method": "getOnlinePlaylistItems",
+      "parameters": {
+        "id": "string，正数歌单/专辑/榜单ID",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, hasMoreEstimated:true",
+      "notes": "保留原内容权限/过滤，不返回播放源地址。"
+    },
+    {
+      "method": "getAlbumTracks",
+      "parameters": {
+        "id": "string，正数歌单/专辑/榜单ID",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, hasMoreEstimated:true",
+      "notes": "保留原内容权限/过滤，不返回播放源地址。"
+    },
+    {
+      "method": "getChartTracks",
+      "parameters": {
+        "id": "string，正数歌单/专辑/榜单ID",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, hasMoreEstimated:true",
+      "notes": "保留原内容权限/过滤，不返回播放源地址。"
+    },
+    {
+      "method": "getArtistTracks",
+      "parameters": {
+        "id": "string，正数歌手ID",
+        "sort": "hot | new，默认hot",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, hasMoreEstimated:true",
+      "notes": ""
+    },
+    {
+      "method": "getCharts",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], resultCount, page, truncated:boolean, hasMoreEstimated:true",
+      "notes": "按宿主榜单分组分页，再展平成至多50项。truncated=true 表示结果被传输上限截断，不保证枚举全部榜单。"
+    },
+    {
+      "method": "getAlbumInfo",
+      "parameters": {
+        "id": "string，正数对象ID"
+      },
+      "result": "item:CatalogItem, items:CatalogItem[]",
+      "notes": "当前公开的是基础目录元数据（ID、名称、可用图片地址），不返回内部复杂业务对象。"
+    },
+    {
+      "method": "getArtistInfo",
+      "parameters": {
+        "id": "string，正数对象ID"
+      },
+      "result": "item:CatalogItem, items:CatalogItem[]",
+      "notes": "当前公开的是基础目录元数据（ID、名称、可用图片地址），不返回内部复杂业务对象。"
+    },
+    {
+      "method": "getOnlinePlaylistInfo",
+      "parameters": {
+        "id": "string，正数对象ID"
+      },
+      "result": "item:CatalogItem, items:CatalogItem[]",
+      "notes": "当前公开的是基础目录元数据（ID、名称、可用图片地址），不返回内部复杂业务对象。"
+    }
+  ],
+  "validation": {
+    "compiled": true,
+    "runtimeTested": false,
+    "vehicleTested": false
+  }
+}
