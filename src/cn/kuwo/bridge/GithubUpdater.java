@@ -20,10 +20,11 @@ public final class GithubUpdater {
         Context context=root.getContext();
         String pkg=context.getPackageName();
         TextView version=root.findViewById(context.getResources().getIdentifier("version","id",pkg));
-        TextView internal=root.findViewById(context.getResources().getIdentifier("internal_version","id",pkg));
         TextView update=root.findViewById(context.getResources().getIdentifier("check_update","id",pkg));
-        version.setText("酷我音乐 V"+BuildInfo.VERSION_NAME);
-        internal.setText("内部版本号："+BuildInfo.VERSION_CODE);
+        version.setText(BuildInfo.VERSION_NAME);
+        version.setOnClickListener(null);
+        version.setClickable(false);
+        root.findViewById(context.getResources().getIdentifier("text_title","id",pkg)).setVisibility(View.GONE);
         update.setVisibility(View.VISIBLE);
         update.setText("检查更新");
         update.setOnClickListener(v -> context.startActivity(new Intent(context,UpdateActivity.class)));

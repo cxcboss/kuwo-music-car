@@ -22,7 +22,9 @@ final class MusicApi {
         "getVolume","setVolume","adjustVolume","getAccountState","cancelRequest",
         "getSongById","getDailyRecommendations","getRecommendedTracks","getHotKeywords","getSearchSuggestions",
         "searchAlbums","searchArtists","searchPlaylists","getRecommendedPlaylists","getOnlinePlaylistItems","getAlbumTracks","getArtistTracks",
-        "getCharts","getChartTracks","getAlbumInfo","getArtistInfo","getOnlinePlaylistInfo"};
+        "getCharts","getChartTracks","getAlbumInfo","getArtistInfo","getOnlinePlaylistInfo",
+        "getDailyHotTracks","getDailyReviewTracks","getRecommendedTracksForSong","getFeaturedPlaylists",
+        "getPlaylistCategories","getPlaylistsByCategory","getRecommendedAlbums","getWordLyrics","getCurrentWordLyric"};
     static boolean handles(String method){return Arrays.asList(METHODS).contains(method);}
     static boolean early(String m){return "getAppInfo".equals(m)||"initialize".equals(m)||"getStartupConfig".equals(m)||"getStartupStatus".equals(m)||"setStartupConfig".equals(m)||"cancelRequest".equals(m);}
     static String http(String value){if(value==null || value.length()>4096)return "";Uri u=Uri.parse(value);return ("https".equalsIgnoreCase(u.getScheme())||"http".equalsIgnoreCase(u.getScheme()))&&u.getHost()!=null?value:"";}
@@ -91,7 +93,7 @@ final class MusicApi {
         try{
             if("getAppInfo".equals(method)){
                 PackageInfo p=context.getPackageManager().getPackageInfo(context.getPackageName(),0);
-                out.putString("packageName",context.getPackageName());out.putString("versionName",p.versionName);out.putLong("versionCode",p.versionCode);out.putInt("apiVersion",2);
+                out.putString("packageName",context.getPackageName());out.putString("versionName",p.versionName);out.putLong("versionCode",p.versionCode);out.putInt("apiVersion",3);
             }else if("getStartupConfig".equals(method)||"getStartupStatus".equals(method))out.putAll(SilentStartup.status());
             else if("setStartupConfig".equals(method)){
                 require(in.containsKey("autoStartEnabled"),"INVALID_ARGUMENT");SilentStartup.setEnabled(in.getBoolean("autoStartEnabled"));out.putAll(SilentStartup.status());out.putBoolean("accepted",true);out.putBoolean("stateConfirmed",true);
@@ -164,6 +166,7 @@ final class MusicApi {
                 out.putInt("volume",audio.getStreamVolume(AudioManager.STREAM_MUSIC));out.putInt("maxVolume",max);out.putString("scope","device_music_stream");
             }else if("getAccountState".equals(method))out.putBoolean("loggedIn",loggedIn());
             else if("getCurrentLyric".equals(method))BridgeProvider.currentLyric(out);
+            else if("getWordLyrics".equals(method)||"getCurrentWordLyric".equals(method))WordLyrics.read(method,in,out);
             else out.putString("status","UNSUPPORTED");
         }catch(Failure failure){out=BridgeProvider.reply(failure.status,id);}
         BridgeProvider.send(cb,out);

@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.RejectedExecutionException;
 
-/** API v2; request() remains v1-compatible. Callbacks run once on the main looper. */
+/** API v3; request() remains v1/v2-compatible. Callbacks run once on the main looper. */
 public final class KuwoBridgeClient implements AutoCloseable {
     public static final String AUTHORITY="cn.kuwo.kwmusiccar.bridge";
     private static final Uri ROOT=Uri.parse("content://"+AUTHORITY);

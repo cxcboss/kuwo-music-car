@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ResultReceiver;
+import android.util.Log;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -17,8 +18,10 @@ final class NetworkCatalog {
     private static final Handler MAIN=new Handler(Looper.getMainLooper());
     private static final String[] METHODS={"getSongById","getDailyRecommendations","getRecommendedTracks","getHotKeywords","getSearchSuggestions",
         "searchAlbums","searchArtists","searchPlaylists","getRecommendedPlaylists","getOnlinePlaylistItems","getAlbumTracks","getArtistTracks",
-        "getCharts","getChartTracks","getAlbumInfo","getArtistInfo","getOnlinePlaylistInfo"};
-    private static final int MUSIC_LIST=0,MUSIC_KW=1,MUSIC_ONE=2,CATALOG_KW=3,CATALOG_ONE=4,STRINGS=5,CHARTS=6;
+        "getCharts","getChartTracks","getAlbumInfo","getArtistInfo","getOnlinePlaylistInfo",
+        "getDailyHotTracks","getDailyReviewTracks","getRecommendedTracksForSong","getFeaturedPlaylists",
+        "getPlaylistCategories","getPlaylistsByCategory","getRecommendedAlbums"};
+    private static final int MUSIC_LIST=0,MUSIC_KW=1,MUSIC_ONE=2,CATALOG_KW=3,CATALOG_ONE=4,STRINGS=5,CHARTS=6,CATALOG_LIST=7,CATEGORIES=8;
     static boolean handles(String method){return Arrays.asList(METHODS).contains(method);}
     @SuppressWarnings({"unchecked","rawtypes"})
     private static Object enumValue(String name,String value)throws Exception{return Enum.valueOf((Class)Class.forName("cn.kuwo.open.base."+name),value);}
@@ -34,6 +37,19 @@ final class NetworkCatalog {
         if("getSongById".equals(method)){target="K";params=new Class<?>[]{long.class};args=new Object[]{id(in)};kind=MUSIC_ONE;}
         else if("getDailyRecommendations".equals(method)){target="x";params=new Class<?>[]{int.class};args=new Object[]{page};kind=MUSIC_KW;}
         else if("getRecommendedTracks".equals(method)){target="F";params=new Class<?>[]{int.class,int.class};args=new Object[]{page,size};kind=MUSIC_LIST;}
+        else if("getDailyHotTracks".equals(method)||"getDailyReviewTracks".equals(method)){
+            target="getDailyHotTracks".equals(method)?"y":"z";params=new Class<?>[]{int.class};args=new Object[]{page};kind=MUSIC_KW;
+        }else if("getRecommendedTracksForSong".equals(method)){
+            target="G";params=new Class<?>[]{long.class,int.class,int.class};args=new Object[]{id(in),page,size};kind=MUSIC_LIST;
+        }else if("getFeaturedPlaylists".equals(method)){
+            target="C";params=new Class<?>[0];args=new Object[0];kind=CATALOG_KW;
+        }else if("getPlaylistCategories".equals(method)){
+            target="M";params=new Class<?>[0];args=new Object[0];kind=CATEGORIES;
+        }else if("getPlaylistsByCategory".equals(method)){
+            target="W";params=new Class<?>[]{long.class,int.class,int.class};args=new Object[]{id(in),page,size};kind=CATALOG_KW;
+        }else if("getRecommendedAlbums".equals(method)){
+            target="R";params=new Class<?>[0];args=new Object[0];kind=CATALOG_LIST;
+        }
         else if("getHotKeywords".equals(method)){target="D";params=new Class<?>[]{int.class};args=new Object[]{size};kind=STRINGS;}
         else if("getSearchSuggestions".equals(method)){target="p0";params=new Class<?>[]{String.class};args=new Object[]{query(in)};kind=STRINGS;}
         else if("searchAlbums".equals(method)||"searchArtists".equals(method)||"searchPlaylists".equals(method)){
@@ -71,13 +87,37 @@ final class NetworkCatalog {
                         else if(resultKind==MUSIC_KW||resultKind==CATALOG_KW)rows=data==null?Collections.emptyList():(List<?>)MusicApi.call(data,"c");
                         else rows=data==null?Collections.emptyList():(List<?>)data;
                         if(rows==null)rows=Collections.emptyList();
+                        if(resultKind==CATEGORIES){
+                            ArrayList<Bundle> categories=new ArrayList<Bundle>();
+                            for(Object group:rows){
+                                String section=String.valueOf(MusicApi.call(group,"getName"));
+                                List<?> entries=(List<?>)MusicApi.call(group,"c");
+                                if(entries==null)continue;
+                                for(Object entry:entries){
+                                    List<?> children=(List<?>)MusicApi.call(entry,"y");
+                                    String groupName=String.valueOf(MusicApi.call(entry,"getName"));
+                                    String parentId=String.valueOf(MusicApi.call(entry,"b"));
+                                    if(children==null || children.isEmpty()){
+                                        Bundle item=catalog(entry);item.putString("sectionName",section);item.putString("groupName",groupName);categories.add(item);
+                                    }else for(Object child:children){
+                                        Bundle item=catalog(child);item.putString("sectionName",section);item.putString("groupName",groupName);item.putString("parentId",parentId);categories.add(item);
+                                    }
+                                }
+                            }
+                            rows=categories;
+                        }
                         int rawCount=rows.size();
                         // Daily discovery has a host-defined page size; return up to the transport cap, not the caller size.
-                        int limit="getDailyRecommendations".equals(method)?50:size;
-                        List<?> bounded=new ArrayList<Object>(rows.subList(0,Math.min(rows.size(),limit)));
+                        boolean fixedPage="getDailyRecommendations".equals(method)||"getDailyHotTracks".equals(method)||"getDailyReviewTracks".equals(method);
+                        boolean localPage=resultKind==CATEGORIES||resultKind==CATALOG_LIST||"getFeaturedPlaylists".equals(method);
+                        int limit=fixedPage?50:size;
+                        int start=localPage?Math.min(rawCount,page*size):0;
+                        List<?> bounded=new ArrayList<Object>(rows.subList(start,Math.min(rawCount,start+limit)));
                         out.putInt("page",page);out.putInt("resultCount",bounded.size());out.putInt("upstreamPageCount",rawCount);
-                        boolean more="getDailyRecommendations".equals(method)?rawCount>0:rawCount>=limit;
-                        out.putBoolean("truncated",rawCount>bounded.size());out.putBoolean("hasMore",more);out.putBoolean("hasMoreEstimated",true);
+                        boolean more=localPage?start+bounded.size()<rawCount:fixedPage?rawCount>0:rawCount>=limit;
+                        out.putBoolean("truncated",!localPage&&rawCount>bounded.size());out.putBoolean("hasMore",more);out.putBoolean("hasMoreEstimated",!localPage);
+                        out.putString("paging",localPage?"local":fixedPage?"host_fixed":"remote");
+                        if(localPage)out.putInt("total",rawCount);
                         if(resultKind==MUSIC_LIST||resultKind==MUSIC_KW||resultKind==MUSIC_ONE){
                             host.save(uid,id,bounded);Bundle first=new Bundle();first.putInt("pageSize",50);BridgeProvider.page(bounded,first,out,0);out.remove("total");out.putInt("page",page);
                             out.putBoolean("hasMore",more);out.putString("resultRequestId",id);
@@ -87,12 +127,12 @@ final class NetworkCatalog {
                         }else{
                             ArrayList<Bundle> items=new ArrayList<Bundle>();
                             int chartCount=0;
-                            for(Object row:bounded){if(row==null)continue;if(resultKind==CHARTS){List<?> charts=(List<?>)MusicApi.call(row,"G");if(charts!=null){chartCount+=charts.size();for(Object chart:charts){if(items.size()>=50)break;items.add(catalog(chart));}}}else items.add(catalog(row));}
+                            for(Object row:bounded){if(row==null)continue;if(resultKind==CHARTS){List<?> charts=(List<?>)MusicApi.call(row,"G");if(charts!=null){chartCount+=charts.size();for(Object chart:charts){if(items.size()>=50)break;items.add(catalog(chart));}}}else items.add(resultKind==CATEGORIES?(Bundle)row:catalog(row));}
                             out.putParcelableArrayList("items",items);if(resultKind==CATALOG_ONE){out.putBoolean("hasMore",false);if(items.isEmpty())out.putString("status","NOT_FOUND");else out.putBundle("item",items.get(0));}
                             if(resultKind==CHARTS){out.putInt("resultCount",items.size());out.putBoolean("truncated",chartCount>items.size() || rawCount>bounded.size());}
                         }
                         pending.finish(out,false);
-                    }catch(Exception e){pending.finish(BridgeProvider.reply("UPSTREAM_ERROR",id),false);}
+                    }catch(Exception e){Log.w("KwBridge",method+" catalog response",e);pending.finish(BridgeProvider.reply("UPSTREAM_ERROR",id),false);}
                 }});
                 return null;
             }

@@ -152,7 +152,7 @@ for cls in ['musiclib/MusicLibFragment','homerecommend/HomeRecommendFragment']:
 api_symbols=json.loads((ROOT/'config/api-symbols.json').read_text())
 required += api_symbols['methods']
 for method in required: check('reflection symbol '+method, method in methods)
-for field in api_symbols['fields']: check('API v2 field '+field,field in fields)
+for field in api_symbols['fields']: check('API field '+field,field in fields)
 for field in [
  'Lcn/kuwo/kwmusiccar/ui/base/BaseMvpFragment;->D:Lv8/o;',
  'Lcn/kuwo/kwmusiccar/ui/homerecommend/HomeRecommendFragment;->F:Lcn/kuwo/kwmusiccar/ui/homerecommend/j;',
@@ -183,7 +183,7 @@ check('original music service retains mediaPlayback foreground type',len(service
 check('music service survives task removal',service[0].get(A+'stopWithTask')=='false')
 updater=[n for n in manifest.find('application').findall('activity') if n.get(A+'name')=='cn.kuwo.bridge.UpdateActivity']
 check('update activity is private',len(updater)==1 and updater[0].get(A+'exported')=='false')
-for cls in ['SilentStartup','Artwork','MusicApi','NetworkCatalog']:check('API v2 class '+cls,'Lcn/kuwo/bridge/'+cls+';' in classes)
+for cls in ['SilentStartup','Artwork','MusicApi','NetworkCatalog','WordLyrics']:check('API class '+cls,'Lcn/kuwo/bridge/'+cls+';' in classes)
 check('original provider authorities moved out of system namespace', all(
     n.get(A+'authorities','').startswith(APPLICATION_ID+'.')
     for n in manifest.find('application').findall('provider') if n.get(A+'name')!='cn.kuwo.bridge.BridgeProvider'))

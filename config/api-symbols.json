@@ -43,12 +43,30 @@
     "Lcn/kuwo/open/base/FetchSongListType;->valueOf(Ljava/lang/String;)Lcn/kuwo/open/base/FetchSongListType;",
     "Lcn/kuwo/open/base/FetchSongLitMusicType;->valueOf(Ljava/lang/String;)Lcn/kuwo/open/base/FetchSongLitMusicType;",
     "Lcn/kuwo/open/base/SortArtistAlbumType;->valueOf(Ljava/lang/String;)Lcn/kuwo/open/base/SortArtistAlbumType;",
-    "Lcn/kuwo/base/bean/ListType;->valueOf(Ljava/lang/String;)Lcn/kuwo/base/bean/ListType;"
+    "Lcn/kuwo/base/bean/ListType;->valueOf(Ljava/lang/String;)Lcn/kuwo/base/bean/ListType;",
+    "Lw8/c;->y(ILw8/d;)Lx8/a;",
+    "Lw8/c;->z(ILw8/d;)Lx8/a;",
+    "Lw8/c;->G(JIILw8/d;)Lx8/a;",
+    "Lw8/c;->C(Lw8/d;)Lx8/a;",
+    "Lw8/c;->M(Lw8/d;)Lx8/a;",
+    "Lw8/c;->W(JIILw8/d;)Lx8/a;",
+    "Lw8/c;->R(Lw8/d;)Lx8/a;",
+    "Lcn/kuwo/base/bean/KwList;->getName()Ljava/lang/String;",
+    "Lcn/kuwo/base/bean/quku/BaseQukuItemList;->y()Ljava/util/List;",
+    "Lcn/kuwo/mod/lyric/a;->getType()Lcn/kuwo/mod/lyric/LyricsDefine$LyricsType;",
+    "Lcn/kuwo/mod/lyric/a;->b()Ljava/util/List;",
+    "Lcn/kuwo/mod/lyric/a;->c()Ljava/util/List;",
+    "Lcn/kuwo/mod/lyric/m;->n()J",
+    "Lcn/kuwo/mod/lyric/m;->o()Ljava/util/List;"
   ],
   "fields": [
     "Lcn/kuwo/base/bean/Music;->i:J",
     "Lcn/kuwo/base/bean/Music;->u:J",
     "Lcn/kuwo/base/bean/Music;->v:Ljava/lang/String;",
-    "Lcn/kuwo/base/bean/Music;->s:I"
+    "Lcn/kuwo/base/bean/Music;->s:I",
+    "Lcn/kuwo/mod/lyric/LyricsDefine$c;->a:Ljava/lang/Integer;",
+    "Lcn/kuwo/mod/lyric/LyricsDefine$c;->b:Ljava/lang/Integer;",
+    "Lcn/kuwo/mod/lyric/LyricsDefine$c;->d:Ljava/lang/Integer;",
+    "Lcn/kuwo/mod/lyric/LyricsDefine$c;->e:Ljava/lang/Integer;"
   ]
 }

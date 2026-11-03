@@ -74,7 +74,7 @@ public final class BridgeProvider extends ContentProvider {
         if (!authorized(uid)) return reply("FORBIDDEN", "");
         if ("capabilities".equals(method)) {
             Bundle b = reply("OK", "");
-            b.putInt("apiVersion", 2);
+            b.putInt("apiVersion", 3);
             b.putInt("minimumCompatibleApiVersion", 1);
             String[] original = new String[] {"getState", "getLyrics", "getLists",
                 "getListItems", "playItem", "play", "pause", "stop", "previous", "next",
@@ -86,6 +86,7 @@ public final class BridgeProvider extends ContentProvider {
             b.putStringArray("observerUris", new String[] {STATE.toString(),LYRICS.toString(),Artwork.CHANGES.toString(),MusicApi.LISTS.toString()});
             b.putInt("maxPageSize",50);b.putInt("requestTimeoutMs",20000);b.putInt("resultRetentionMs",120000);
             b.putString("artworkMimeType","image/png");b.putInt("maxArtworkEdge",1024);
+            b.putString("wordLyricFormat","LRCX");b.putInt("maxWordPageSize",50);
             return b;
         }
         final Bundle request;

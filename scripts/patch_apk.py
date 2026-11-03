@@ -217,11 +217,38 @@ inject("b4/x.smali", "c(Lc4/b$b;I)V", "    invoke-static {p1}, Lcn/kuwo/bridge/L
 from performance_patch import apply_performance
 apply_performance(file, change, inject, edits)
 
-# The original update control is hidden and has no click handler. Reuse that row.
+# The host binds its legacy fields unconditionally. Keep those views in a gone
+# subtree, with only the version and update control visible in either orientation.
+for p in DEST.glob('res/layout*/fragment_check_update*.xml'):
+    tree = ET.parse(p)
+    legacy = tree.getroot()
+    nodes = {n.get(A+'id','').split('/')[-1]: n for n in legacy.iter()}
+    parents = {child: parent for parent in legacy.iter() for child in parent}
+    version, update = nodes['version'], nodes['check_update']
+    parents[version].remove(version)
+    parents[update].remove(update)
+    version.set(A+'layout_marginTop','0dp')
+    version.set(A+'gravity','center')
+    update.set(A+'visibility','visible')
+    update.set(A+'layout_marginTop','32dp')
+    legacy.set(A+'visibility','gone')
+    legacy.set(A+'layout_width','0dp')
+    legacy.set(A+'layout_height','0dp')
+    page = ET.Element('LinearLayout', {
+        A+'layout_width':'match_parent', A+'layout_height':'match_parent',
+        A+'gravity':'center', A+'orientation':'vertical', A+'padding':'24dp'})
+    page.extend([version, update, legacy])
+    ET.ElementTree(page).write(p,encoding='utf-8',xml_declaration=True)
+    edits.append({'resource':str(p.relative_to(DEST)), 'minimal_about':True})
+
 inject("cn/kuwo/kwmusiccar/ui/fragment/CheckUpdateFragment.smali", "onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V",
        """    invoke-virtual {p0}, Landroidx/fragment/app/Fragment;->getView()Landroid/view/View;
     move-result-object v0
     invoke-static {v0}, Lcn/kuwo/bridge/GithubUpdater;->bindAbout(Landroid/view/View;)V""", True)
+
+inject('cn/kuwo/mod/lyric/j.smali',
+       'f(Lcn/kuwo/base/bean/Music;Lcn/kuwo/mod/lyric/LyricsDefine$DownloadStatus;Lcn/kuwo/mod/lyric/a;Lcn/kuwo/mod/lyric/a;Z)V',
+       '    invoke-static {p0, p1, p2, p4}, Lcn/kuwo/bridge/WordLyrics;->capture(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Z)V')
 change("cn/kuwo/kwmusiccar/KwApp.smali", "getVersionName()Ljava/lang/String;",
        f'    const-string v0, "{VERSION_NAME}"\n    return-object v0', 1)
 change("cn/kuwo/kwmusiccar/KwApp.smali", "getVersionCode()I",

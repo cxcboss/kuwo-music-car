@@ -1,11 +1,11 @@
 {
-  "apiVersion": 2,
+  "apiVersion": 3,
   "minimumCompatibleApiVersion": 1,
-  "buildVersion": "1.0.0",
-  "versionCode": 74000,
+  "buildVersion": "1.0.01",
+  "versionCode": 74001,
   "applicationId": "cn.kuwo.kwmusiccas",
   "authority": "cn.kuwo.kwmusiccar.bridge",
-  "methodCount": 67,
+  "methodCount": 76,
   "transport": "ContentProvider.call + ResultReceiver; artwork: openInputStream",
   "limits": {
     "pageSizeMax": 50,
@@ -24,7 +24,7 @@
     {
       "method": "capabilities",
       "parameters": {},
-      "result": "apiVersion:int=2, minimumCompatibleApiVersion:int=1, methods:String[], listTypes:String[], observerUris:String[], limits",
+      "result": "apiVersion:int=3, minimumCompatibleApiVersion:int=1, methods:String[], listTypes:String[], observerUris:String[], limits, wordLyricFormat:LRCX, maxWordPageSize:int=50",
       "notes": "同步响应；SDK 统一以异步回调交付，不需要服务就绪。"
     },
     {
@@ -568,11 +568,98 @@
       },
       "result": "item:CatalogItem, items:CatalogItem[]",
       "notes": "当前公开的是基础目录元数据（ID、名称、可用图片地址），不返回内部复杂业务对象。"
+    },
+    {
+      "method": "getDailyHotTracks",
+      "parameters": {
+        "page": "int 默认0"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, upstreamPageCount, paging:host_fixed, hasMoreEstimated:true",
+      "notes": "原每日热歌入口，上游已标记 deprecated；固定页大小，最多50项。"
+    },
+    {
+      "method": "getDailyReviewTracks",
+      "parameters": {
+        "page": "int 默认0"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, upstreamPageCount, paging:host_fixed, hasMoreEstimated:true",
+      "notes": "原每日回顾入口，上游已标记 deprecated；固定页大小，最多50项。"
+    },
+    {
+      "method": "getRecommendedTracksForSong",
+      "parameters": {
+        "id": "string 正数歌曲ID",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:Song[], resultRequestId, page, resultCount, paging:remote, hasMoreEstimated:true",
+      "notes": "宿主歌曲电台推荐，不承诺全部为相似歌曲。"
+    },
+    {
+      "method": "getFeaturedPlaylists",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, total:int, paging:local, hasMoreEstimated:false",
+      "notes": "宿主首页分类歌单集合，单次获取后在桥内分页。"
+    },
+    {
+      "method": "getPlaylistCategories",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:PlaylistCategory[], page, resultCount, total:int, paging:local, hasMoreEstimated:false",
+      "notes": "按 sectionName/groupName 分组，子项保留 parentId；id 传给 getPlaylistsByCategory。"
+    },
+    {
+      "method": "getPlaylistsByCategory",
+      "parameters": {
+        "id": "string 正数分类ID，来自 getPlaylistCategories",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, paging:remote, hasMoreEstimated:true",
+      "notes": "歌单ID再传给 getOnlinePlaylistItems。"
+    },
+    {
+      "method": "getRecommendedAlbums",
+      "parameters": {
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "items:CatalogItem[], page, resultCount, total:int, paging:local, hasMoreEstimated:false",
+      "notes": "宿主推荐数字专辑集合，专辑ID再传给 getAlbumTracks。"
+    },
+    {
+      "method": "getWordLyrics",
+      "parameters": {
+        "trackKey": "string 可选，建议传当前歌曲以防切歌",
+        "revision": "long 可选，续页传首个响应值",
+        "page": "int 默认0",
+        "pageSize": "int 默认30，1..50"
+      },
+      "result": "trackKey, revision:long, lyricType, resultCode:int, offsetMs:long, wordTimingAvailable:boolean, reason, source, truncated:boolean, items:WordLyric[], total:int, page:int, pageSize:int, hasMore:boolean",
+      "notes": "当前歌曲原始 LRCX 时间轴；普通 LRC 不推算逐字时间。歌词 revision 与旧逐行接口独立。"
+    },
+    {
+      "method": "getCurrentWordLyric",
+      "parameters": {
+        "trackKey": "string 可选",
+        "revision": "long 可选"
+      },
+      "result": "trackKey, revision:long, lyricType, resultCode:int, offsetMs:long, wordTimingAvailable:boolean, reason, source, truncated:boolean, total:int, positionMs:long, sampledAtElapsedMs:long, index:int, active:boolean, progress:float, word/next:WordLyric 可缺省",
+      "notes": "index=-1 表示尚未到首个字块或无逐字数据。结束字块间隙 active=false，progress=1。"
     }
   ],
   "validation": {
     "compiled": true,
     "runtimeTested": false,
     "vehicleTested": false
+  },
+  "types": {
+    "PlaylistCategory": "CatalogItem + sectionName:string, groupName:string, parentId:string 可缺省",
+    "WordLyric": "index:int, lineIndex:int, wordIndexInLine:int, charStart:int, charEnd:int, text:string, lineText:string, lineStartMs:long, startMs:long, endMs:long, durationMs:long；charEnd 不包含，索引为 UTF-16；时间已包含 offsetMs"
   }
 }

@@ -23,7 +23,10 @@
 | `src/cn/kuwo/bridge/UpdateActivity.java` | 检查/下载状态、存储权限、APK 校验、安装器调用 |
 | `src/cn/kuwo/bridge/BridgeProvider.java` | 接口入口、调用方白名单、异步请求和观察通知 |
 | `src/cn/kuwo/bridge/MusicApi.java` | 音乐接口分发及宿主适配 |
-| `sdk/api-contract.json` | 机器可读的 67 项接口合同 |
+| `src/cn/kuwo/bridge/NetworkCatalog.java` | 原业务客户端的推荐、搜索、分类和在线目录适配 |
+| `src/cn/kuwo/bridge/WordLyrics.java` | 复制原始 LRCX 字块及时间轴，不推算普通 LRC 的逐字时间 |
+| `sdk/api-contract.json` | 机器可读的 76 项接口合同 |
+| `sdk/其它App对接指南.md` | 给其它 AI 的功能表、请求示例、分类链路和逐字歌词接法 |
 
 `BuildInfo.java` 由构建脚本根据版本配置生成在外部构建目录，不手工维护。
 
@@ -35,7 +38,11 @@
 - 默认客户端：`com.cabindeck`，扩展白名单修改 `config/bridge_clients.txt` 并重新构建。
 - 签名证书 SHA-256：`f90366ddd1c20a75d21fb6162dc07572348922ab744e481c1ceb3d454d4593d0`。
 
-接口总数包含 `capabilities` 自身，共 67 个入口；`capabilities.methods` 返回其余 66 个方法。
+当前 1.0.01 使用 API v3，总数包含 `capabilities` 自身，共 76 个入口；`capabilities.methods` 返回其余 75 个方法。1.0.0 的 API v2 为 67 项，既有方法保持兼容。
+
+关于页仅显示版本号和检查更新控件，保留返回操作。原页面会无条件绑定旧字段，因此旧控件保留在 `GONE` 父布局中；不要直接删除这些 View 而不修改原绑定逻辑，也不要把它们重新移回可见布局。
+
+逐字歌词在原 `cn.kuwo.mod.lyric.j.f` 回调复制第一个原始歌词对象。末尾 boolean 是宿主保留旧歌词的刷新标记，不是预加载标记；此类刷新仅在 SUCCESS 时替换旧快照。逐字接口与逐行接口的 revision、行下标独立。客户端使用逐字自身的 lineText/lineIndex，时间已经包含 offsetMs。
 
 ## 版本与更新维护
 
