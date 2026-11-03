@@ -35,6 +35,8 @@
 - 默认客户端：`com.cabindeck`，扩展白名单修改 `config/bridge_clients.txt` 并重新构建。
 - 签名证书 SHA-256：`f90366ddd1c20a75d21fb6162dc07572348922ab744e481c1ceb3d454d4593d0`。
 
+接口总数包含 `capabilities` 自身，共 67 个入口；`capabilities.methods` 返回其余 66 个方法。
+
 ## 版本与更新维护
 
 新版本执行 `python3 scripts/bump_version.py`，补充 `docs/版本更新.md`，构建并使用既有证书签名。提交并推送代码后运行发布脚本。`update.json` 必须和对应 APK 一起作为同一 Release 的附件，不能手写不匹配的哈希或版本码。
